@@ -109,7 +109,7 @@ export const WIN_LINES = [
 
 export const LOSS_LINES = [
   "You got mogged by a fluffy legend.",
-  "Out-flufffed. It happens.",
+  "Out-fluffed. It happens.",
   "Their pet had the aura today.",
   "Mogged. Rematch immediately.",
 ];
@@ -122,7 +122,7 @@ let ctx: AudioContext | null = null;
 export function beep(freq: number, duration = 0.12, enabled = true) {
   if (!enabled || typeof window === "undefined") return;
   try {
-    ctx = ctx ?? new (window.AudioContext || (window as any).webkitAudioContext)();
+    ctx = ctx ?? new AudioContext();
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     o.type = "sine";
@@ -137,7 +137,13 @@ export function beep(freq: number, duration = 0.12, enabled = true) {
   }
 }
 
-export type LeaderRow = { username: string; petName: string; emoji: string; elo: number; wins: number };
+export type LeaderRow = {
+  username: string;
+  petName: string;
+  emoji: string;
+  elo: number;
+  wins: number;
+};
 
 export function leaderboard(profile: Profile): LeaderRow[] {
   const base: LeaderRow[] = [
@@ -153,6 +159,12 @@ export function leaderboard(profile: Profile): LeaderRow[] {
   ];
   return [
     ...base,
-    { username: profile.username, petName: profile.petName, emoji: "⭐", elo: profile.elo, wins: profile.wins },
+    {
+      username: profile.username,
+      petName: profile.petName,
+      emoji: "⭐",
+      elo: profile.elo,
+      wins: profile.wins,
+    },
   ].sort((a, b) => b.elo - a.elo);
 }

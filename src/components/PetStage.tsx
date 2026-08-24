@@ -45,11 +45,13 @@ export function WebcamStage({ label, active }: { label: string; active: boolean 
             <CameraOff className="size-7" />
           )}
           <p className="text-xs font-semibold">
-            {state === "error" ? "Camera unavailable — the duel still runs!" : "Waking up the camera…"}
+            {state === "error"
+              ? "Camera unavailable — the duel still runs!"
+              : "Waking up the camera…"}
           </p>
         </div>
       )}
-      <span className="absolute bottom-2 left-2 rounded-full bg-background/80 px-3 py-1 text-xs font-bold">
+      <span className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-background/80 px-3 py-1 text-xs font-bold">
         {label}
       </span>
     </div>
@@ -67,7 +69,7 @@ export function OpponentStage({ label, emoji }: { label: string; emoji: string }
           live
         </span>
       </div>
-      <span className="absolute bottom-2 left-2 rounded-full bg-background/80 px-3 py-1 text-xs font-bold">
+      <span className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-background/80 px-3 py-1 text-xs font-bold">
         {label}
       </span>
     </div>

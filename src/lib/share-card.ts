@@ -12,7 +12,14 @@ type CardData = {
   rankEmoji: string;
 };
 
-function roundRect(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+function roundRect(
+  c: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
   c.beginPath();
   c.moveTo(x + r, y);
   c.arcTo(x + w, y, x + w, y + h, r);
@@ -123,10 +130,14 @@ export async function shareCard(data: CardData) {
   const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
   if (nav.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: "PetMog", text: "My pet just duelled on PetMog 🐾" });
+      await navigator.share({
+        files: [file],
+        title: "PetMog",
+        text: "My pet just duelled on PetMog 🐾",
+      });
       return "shared" as const;
-    } catch {
-      /* fall through to download */
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return "cancelled" as const;
     }
   }
   const url = URL.createObjectURL(blob);

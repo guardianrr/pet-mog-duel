@@ -202,10 +202,27 @@ function PetMog() {
             onCreateCode={() => {
               const code = makeCode();
               setFriendCode(code);
-              navigator.clipboard?.writeText(code).catch(() => undefined);
-              toast.success(`Friend code ${code} copied!`, {
-                description: "Share it, then start the duel.",
-              });
+              const copy = navigator.clipboard?.writeText(code);
+              if (!copy) {
+                toast.success(`Friend code ${code} is ready`, {
+                  description: "Share it before starting the friend duel.",
+                });
+                return;
+              }
+              void copy
+                .then(() =>
+                  toast.success(`Friend code ${code} copied!`, {
+                    description: "Share it, then start the friend duel.",
+                  }),
+                )
+                .catch(() =>
+                  toast.success(`Friend code ${code} is ready`, {
+                    description: "Share it before starting the friend duel.",
+                  }),
+                );
+            }}
+            onStartFriend={() => {
+              if (friendCode) startDuel(friendCode);
             }}
             friendCode={friendCode}
             joinCode={joinCode}
@@ -319,6 +336,7 @@ function Home(props: {
   nextRankName?: string | undefined;
   onStart: () => void;
   onCreateCode: () => void;
+  onStartFriend: () => void;
   friendCode: string | null;
   joinCode: string;
   setJoinCode: (v: string) => void;
@@ -371,9 +389,14 @@ function Home(props: {
             Create friend code
           </Button>
           {props.friendCode && (
-            <p className="rounded-2xl bg-muted px-4 py-3 text-center font-display text-3xl font-extrabold tracking-[0.3em]">
-              {props.friendCode}
-            </p>
+            <>
+              <p className="rounded-2xl bg-muted px-4 py-3 text-center font-display text-3xl font-extrabold tracking-[0.3em]">
+                {props.friendCode}
+              </p>
+              <Button className="w-full rounded-full font-bold" onClick={props.onStartFriend}>
+                Start friend duel
+              </Button>
+            </>
           )}
           <div className="flex gap-2">
             <Input

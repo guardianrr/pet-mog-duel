@@ -120,7 +120,13 @@ function ProfilePage() {
           variant="ghost"
           className="w-full rounded-full font-bold text-lose"
           onClick={() => {
-            const fresh = defaultProfile();
+            const fresh: Profile = {
+              ...profile,
+              elo: 1000,
+              peakElo: 1000,
+              wins: 0,
+              losses: 0,
+            };
             setProfile(fresh);
             persistProfile(fresh);
             toast.success("Stats reset — fresh pet, fresh start 🐾");
