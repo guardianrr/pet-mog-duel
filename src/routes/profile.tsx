@@ -1,12 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { defaultProfile, loadProfile, rankFor, saveProfile, RANKS, type Profile } from "@/lib/petmog";
 
 export const Route = createFileRoute("/profile")({
@@ -41,41 +39,36 @@ function ProfilePage() {
   const games = profile.wins + profile.losses;
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-6">
-      <div className="mb-6 flex items-center justify-between">
-        <Button asChild variant="ghost" className="rounded-full font-bold">
-          <Link to="/">
-            <ArrowLeft className="size-4" /> Home
-          </Link>
-        </Button>
-        <ThemeToggle />
-      </div>
-
-      <div className="card-soft p-6 text-center">
-        <div className="text-6xl">{rank.emoji}</div>
-        <h1 className="mt-2 font-display text-3xl font-extrabold text-gradient">{profile.petName}</h1>
+    <div className="mx-auto w-full max-w-2xl px-4 py-8">
+      <div className="card-soft relative overflow-hidden p-8 text-center">
+        <div className="pointer-events-none absolute -right-8 -top-8 text-8xl opacity-15">🐾</div>
+        <div className="mx-auto grid size-20 place-items-center rounded-full bg-accent text-5xl shadow-soft">
+          {rank.emoji}
+        </div>
+        <h1 className="mt-3 font-display text-4xl font-extrabold text-gradient">{profile.petName}</h1>
         <p className="text-sm font-semibold text-muted-foreground">@{profile.username}</p>
-        <p className="mt-3 inline-block rounded-full bg-accent px-4 py-1 text-sm font-bold text-accent-foreground">
+        <p className="mt-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-extrabold text-accent-foreground shadow-soft">
           {rank.name} · {profile.elo} ELO
         </p>
-        <div className="mt-6 grid grid-cols-3 gap-3">
+        <div className="mt-7 grid grid-cols-3 gap-3">
           {[
             ["Wins", profile.wins],
             ["Losses", profile.losses],
             ["Win rate", games ? `${Math.round((profile.wins / games) * 100)}%` : "—"],
           ].map(([label, value]) => (
-            <div key={label as string} className="rounded-2xl bg-muted p-3">
+            <div key={label as string} className="rounded-2xl bg-muted p-4">
               <p className="font-display text-2xl font-extrabold">{value}</p>
               <p className="text-xs font-semibold text-muted-foreground">{label}</p>
             </div>
           ))}
         </div>
-        <p className="mt-4 text-xs font-semibold text-muted-foreground">
+        <p className="mt-5 text-xs font-semibold text-muted-foreground">
           Highest rank reached: {peakRank.emoji} {peakRank.name} ({profile.peakElo})
         </p>
       </div>
 
-      <div className="card-soft mt-4 space-y-4 p-6">
+      <div className="card-soft mt-4 space-y-4 p-6 sm:p-8">
+        <h2 className="font-display text-xl font-extrabold">Your pet</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="username">Username</Label>
@@ -114,14 +107,14 @@ function ProfilePage() {
         </Button>
       </div>
 
-      <div className="card-soft mt-4 p-6">
+      <div className="card-soft mt-4 p-6 sm:p-8">
         <h2 className="font-display text-xl font-extrabold">Ranks</h2>
         <ul className="mt-3 space-y-1.5 text-sm font-semibold">
           {RANKS.map((r) => (
             <li
               key={r.name}
-              className={`flex justify-between rounded-xl px-3 py-2 ${
-                r.name === rank.name ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+              className={`flex justify-between rounded-xl px-3 py-2.5 transition-colors ${
+                r.name === rank.name ? "bg-accent text-accent-foreground shadow-soft" : "text-muted-foreground hover:bg-muted"
               }`}
             >
               <span>

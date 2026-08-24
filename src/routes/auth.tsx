@@ -1,11 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { loadProfile } from "@/lib/petmog";
@@ -94,100 +92,97 @@ function AuthPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-6">
-      <div className="mb-6 flex items-center justify-between">
-        <Button asChild variant="ghost" className="rounded-full font-bold">
-          <Link to="/">
-            <ArrowLeft className="size-4" /> Home
-          </Link>
-        </Button>
-        <ThemeToggle />
-      </div>
+    <div className="mx-auto w-full max-w-md px-4 py-8">
+      <div className="overflow-hidden rounded-[2rem] shadow-pop">
+        <img
+          src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=900&q=80"
+          alt="A smiling golden retriever ready to duel"
+          className="h-40 w-full object-cover"
+        />
+        <div className="card-soft rounded-none border-x-0 border-b-0 p-6 sm:p-8">
+          <div className="text-center">
+            <h1 className="font-display text-3xl font-extrabold text-gradient">
+              {mode === "signup" ? "Create your account" : "Welcome back"}
+            </h1>
+            <p className="mt-1 text-sm font-semibold text-muted-foreground">
+              Sync your pet's ELO, rank and record everywhere.
+            </p>
+          </div>
 
-      <div className="card-soft p-6">
-        <div className="text-center">
-          <div className="text-5xl">🐾</div>
-          <h1 className="mt-2 font-display text-3xl font-extrabold text-gradient">
-            {mode === "signup" ? "Create your account" : "Welcome back"}
-          </h1>
-          <p className="mt-1 text-sm font-semibold text-muted-foreground">
-            Sync your pet's ELO, rank and record everywhere.
-          </p>
-        </div>
+          {sent ? (
+            <p className="mt-6 rounded-2xl bg-muted p-4 text-center text-sm font-semibold">
+              We sent a confirmation link to <span className="font-extrabold">{email}</span>. Click it to
+              activate your account, then come back and sign in.
+            </p>
+          ) : (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-6 w-full rounded-full font-bold"
+                disabled={busy}
+                onClick={google}
+              >
+                Continue with Google
+              </Button>
 
-        {sent ? (
-          <p className="mt-6 rounded-2xl bg-muted p-4 text-center text-sm font-semibold">
-            We sent a confirmation link to <span className="font-extrabold">{email}</span>. Click it to
-            activate your account, then come back and sign in.
-          </p>
-        ) : (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-6 w-full rounded-full font-bold"
-              disabled={busy}
-              onClick={google}
-            >
-              Continue with Google
-            </Button>
-
-            <div className="my-4 flex items-center gap-3 text-xs font-bold text-muted-foreground">
-              <span className="h-px flex-1 bg-border" /> OR <span className="h-px flex-1 bg-border" />
-            </div>
-
-            <form onSubmit={submit} className="space-y-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-full"
-                />
+              <div className="my-4 flex items-center gap-3 text-xs font-bold text-muted-foreground">
+                <span className="h-px flex-1 bg-border" /> OR <span className="h-px flex-1 bg-border" />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  minLength={6}
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="rounded-full"
-                />
-              </div>
-              {mode === "signup" && (
+
+              <form onSubmit={submit} className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="petName">Pet name</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="petName"
-                    value={petName}
-                    onChange={(e) => setPetName(e.target.value.slice(0, 20))}
-                    placeholder="Waffle"
+                    id="email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="rounded-full"
                   />
                 </div>
-              )}
-              <Button type="submit" disabled={busy} className="w-full rounded-full font-extrabold">
-                {mode === "signup" ? "Create account" : "Sign in"}
-              </Button>
-            </form>
+                <div className="space-y-1.5">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    minLength={6}
+                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="rounded-full"
+                  />
+                </div>
+                {mode === "signup" && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="petName">Pet name</Label>
+                    <Input
+                      id="petName"
+                      value={petName}
+                      onChange={(e) => setPetName(e.target.value.slice(0, 20))}
+                      placeholder="Waffle"
+                      className="rounded-full"
+                    />
+                  </div>
+                )}
+                <Button type="submit" disabled={busy} className="w-full rounded-full font-extrabold">
+                  {mode === "signup" ? "Create account" : "Sign in"}
+                </Button>
+              </form>
 
-            <button
-              type="button"
-              className="mt-4 w-full text-center text-sm font-bold text-muted-foreground hover:text-foreground"
-              onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-            >
-              {mode === "signup" ? "Already have an account? Sign in" : "New here? Create an account"}
-            </button>
-          </>
-        )}
+              <button
+                type="button"
+                className="mt-4 w-full text-center text-sm font-bold text-muted-foreground transition hover:text-foreground"
+                onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+              >
+                {mode === "signup" ? "Already have an account? Sign in" : "New here? Create an account"}
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
