@@ -60,7 +60,11 @@ function ProfilePage() {
           </Link>
         </Button>
         <div className="flex items-center gap-1">
-          <AccountActions user={user} loading={sessionLoading} />
+          <AccountActions
+            user={user}
+            loading={sessionLoading}
+            onSignedOut={() => setProfile(loadProfile())}
+          />
           <ThemeToggle />
         </div>
       </div>

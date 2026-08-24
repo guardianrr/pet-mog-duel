@@ -186,7 +186,12 @@ function PetMog() {
               <Trophy className="size-4" /> <span className="hidden sm:inline">Leaderboard</span>
             </Link>
           </Button>
-          <AccountActions user={user} loading={sessionLoading} showGuestProfile />
+          <AccountActions
+            user={user}
+            loading={sessionLoading}
+            showGuestProfile
+            onSignedOut={() => setProfile(loadProfile())}
+          />
           <ThemeToggle />
         </nav>
       </header>

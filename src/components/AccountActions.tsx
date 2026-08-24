@@ -11,10 +11,12 @@ export function AccountActions({
   user,
   loading,
   showGuestProfile = false,
+  onSignedOut,
 }: {
   user: User | null;
   loading: boolean;
   showGuestProfile?: boolean;
+  onSignedOut?: () => void;
 }) {
   const [signingOut, setSigningOut] = useState(false);
 
@@ -42,6 +44,7 @@ export function AccountActions({
             setSigningOut(true);
             try {
               await signOut();
+              onSignedOut?.();
               toast.success("Signed out");
             } catch (error) {
               toast.error(error instanceof Error ? error.message : "Could not sign out");

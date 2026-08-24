@@ -70,6 +70,12 @@ export function saveProfile(p: Profile) {
   localStorage.setItem(KEY, JSON.stringify(p));
 }
 
+export function resetSavedProfile() {
+  const profile = defaultProfile();
+  saveProfile(profile);
+  return profile;
+}
+
 export function eloDelta(playerElo: number, oppElo: number, won: boolean, k = 32) {
   const expected = 1 / (1 + Math.pow(10, (oppElo - playerElo) / 400));
   return Math.round(k * ((won ? 1 : 0) - expected));
