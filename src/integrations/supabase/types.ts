@@ -14,7 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          elo: number
+          id: string
+          losses: number
+          peak_elo: number
+          pet_name: string
+          updated_at: string
+          username: string
+          wins: number
+        }
+        Insert: {
+          created_at?: string
+          elo?: number
+          id: string
+          losses?: number
+          peak_elo?: number
+          pet_name?: string
+          updated_at?: string
+          username: string
+          wins?: number
+        }
+        Update: {
+          created_at?: string
+          elo?: number
+          id?: string
+          losses?: number
+          peak_elo?: number
+          pet_name?: string
+          updated_at?: string
+          username?: string
+          wins?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
