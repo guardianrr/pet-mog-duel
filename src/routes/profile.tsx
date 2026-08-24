@@ -6,8 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { AccountActions } from "@/components/AccountActions";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { defaultProfile, loadProfile, rankFor, saveProfile, RANKS, type Profile } from "@/lib/petmog";
+import {
+  defaultProfile,
+  loadProfile,
+  rankFor,
+  saveProfile,
+  RANKS,
+  type Profile,
+} from "@/lib/petmog";
+import { useSession } from "@/lib/session";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -15,10 +24,14 @@ export const Route = createFileRoute("/profile")({
       { title: "Your PetMog Profile — ELO, Rank & Record" },
       {
         name: "description",
-        content: "Track your PetMog duel record: wins, losses, current ELO, rank badge and highest rank reached.",
+        content:
+          "Track your PetMog duel record: wins, losses, current ELO, rank badge and highest rank reached.",
       },
       { property: "og:title", content: "Your PetMog Profile" },
-      { property: "og:description", content: "Your pet's duel record, ELO and rank progress on PetMog." },
+      {
+        property: "og:description",
+        content: "Your pet's duel record, ELO and rank progress on PetMog.",
+      },
       { property: "og:type", content: "profile" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -27,6 +40,7 @@ export const Route = createFileRoute("/profile")({
 });
 
 function ProfilePage() {
+  const { user, loading: sessionLoading } = useSession();
   const [profile, setProfile] = useState<Profile>(() => defaultProfile());
   useEffect(() => setProfile(loadProfile()), []);
 
@@ -48,12 +62,17 @@ function ProfilePage() {
             <ArrowLeft className="size-4" /> Home
           </Link>
         </Button>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <AccountActions user={user} loading={sessionLoading} />
+          <ThemeToggle />
+        </div>
       </div>
 
       <div className="card-soft p-6 text-center">
         <div className="text-6xl">{rank.emoji}</div>
-        <h1 className="mt-2 font-display text-3xl font-extrabold text-gradient">{profile.petName}</h1>
+        <h1 className="mt-2 font-display text-3xl font-extrabold text-gradient">
+          {profile.petName}
+        </h1>
         <p className="text-sm font-semibold text-muted-foreground">@{profile.username}</p>
         <p className="mt-3 inline-block rounded-full bg-accent px-4 py-1 text-sm font-bold text-accent-foreground">
           {rank.name} · {profile.elo} ELO
