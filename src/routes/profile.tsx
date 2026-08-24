@@ -8,14 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { AccountActions } from "@/components/AccountActions";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import {
-  defaultProfile,
-  loadProfile,
-  rankFor,
-  saveProfile,
-  RANKS,
-  type Profile,
-} from "@/lib/petmog";
+import { persistProfile, useCloudProfileSync } from "@/lib/cloud-profile";
+import { defaultProfile, loadProfile, rankFor, RANKS, type Profile } from "@/lib/petmog";
 import { useSession } from "@/lib/session";
 
 export const Route = createFileRoute("/profile")({
@@ -42,12 +36,15 @@ export const Route = createFileRoute("/profile")({
 function ProfilePage() {
   const { user, loading: sessionLoading } = useSession();
   const [profile, setProfile] = useState<Profile>(() => defaultProfile());
+
+  useCloudProfileSync(user?.id, setProfile);
+
   useEffect(() => setProfile(loadProfile()), []);
 
   const update = (patch: Partial<Profile>) => {
     const next = { ...profile, ...patch };
     setProfile(next);
-    saveProfile(next);
+    persistProfile(next);
   };
 
   const rank = rankFor(profile.elo);
@@ -125,7 +122,7 @@ function ProfilePage() {
           onClick={() => {
             const fresh = defaultProfile();
             setProfile(fresh);
-            saveProfile(fresh);
+            persistProfile(fresh);
             toast.success("Stats reset — fresh pet, fresh start 🐾");
           }}
         >

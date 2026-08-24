@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { AccountActions } from "@/components/AccountActions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OpponentStage, WebcamStage } from "@/components/PetStage";
+import { persistProfile, useCloudProfileSync } from "@/lib/cloud-profile";
 import { shareCard } from "@/lib/share-card";
 import { useSession } from "@/lib/session";
 import {
@@ -22,7 +23,6 @@ import {
   randomOpponent,
   rankFor,
   rollScores,
-  saveProfile,
   WIN_LINES,
   type Profile,
   type Scores,
@@ -71,6 +71,8 @@ function PetMog() {
   const [online, setOnline] = useState(1287);
   const timers = useRef<number[]>([]);
 
+  useCloudProfileSync(user?.id, setProfile);
+
   useEffect(() => {
     setProfile(loadProfile());
   }, []);
@@ -106,7 +108,7 @@ function PetMog() {
       };
       next.peakElo = Math.max(next.peakElo, next.elo);
       setProfile(next);
-      saveProfile(next);
+      persistProfile(next);
       setResult({
         mine,
         theirs,
@@ -168,7 +170,7 @@ function PetMog() {
   const updateProfile = (patch: Partial<Profile>) => {
     const next = { ...profile, ...patch };
     setProfile(next);
-    saveProfile(next);
+    persistProfile(next);
   };
 
   return (

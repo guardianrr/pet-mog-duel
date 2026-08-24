@@ -30,10 +30,7 @@ export function persistProfile(profile: Profile) {
  * Pulls the signed-in account's stats into local state once the user is known,
  * seeding the cloud row from local stats the first time.
  */
-export function useCloudProfileSync(
-  userId: string | undefined,
-  apply: (profile: Profile) => void,
-) {
+export function useCloudProfileSync(userId: string | undefined, apply: (profile: Profile) => void) {
   useEffect(() => {
     if (!userId) return;
     let active = true;
