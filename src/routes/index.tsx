@@ -1,15 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Crown, Heart, Share2, Sparkles, Trophy, Users } from "lucide-react";
+import { Crown, Share2, Sparkles, Trophy, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
+import { AccountActions } from "@/components/AccountActions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OpponentStage, WebcamStage } from "@/components/PetStage";
+import { persistProfile, useCloudProfileSync } from "@/lib/cloud-profile";
 import { shareCard } from "@/lib/share-card";
+import { useSession } from "@/lib/session";
 import {
   beep,
   eloDelta,
@@ -20,7 +23,6 @@ import {
   randomOpponent,
   rankFor,
   rollScores,
-  saveProfile,
   WIN_LINES,
   type Profile,
   type Scores,
@@ -38,7 +40,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "PetMog — 1v1 pet cuteness duels" },
       {
         property: "og:description",
-        content: "Show your pet, duel in 15 seconds, and find out who gets mogged. Free and just for fun.",
+        content:
+          "Show your pet, duel in 15 seconds, and find out who gets mogged. Free and just for fun.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -50,6 +53,7 @@ export const Route = createFileRoute("/")({
 type Phase = "home" | "matching" | "duel" | "analyzing" | "results";
 
 function PetMog() {
+  const { user, loading: sessionLoading } = useSession();
   const [profile, setProfile] = useState<Profile>(() => loadProfile());
   const [phase, setPhase] = useState<Phase>("home");
   const [opponent, setOpponent] = useState(() => randomOpponent());
@@ -66,6 +70,8 @@ function PetMog() {
   const [joinCode, setJoinCode] = useState("");
   const [online, setOnline] = useState(1287);
   const timers = useRef<number[]>([]);
+
+  useCloudProfileSync(user?.id, setProfile);
 
   useEffect(() => {
     setProfile(loadProfile());
@@ -102,7 +108,7 @@ function PetMog() {
       };
       next.peakElo = Math.max(next.peakElo, next.elo);
       setProfile(next);
-      saveProfile(next);
+      persistProfile(next);
       setResult({
         mine,
         theirs,
@@ -164,7 +170,7 @@ function PetMog() {
   const updateProfile = (patch: Partial<Profile>) => {
     const next = { ...profile, ...patch };
     setProfile(next);
-    saveProfile(next);
+    persistProfile(next);
   };
 
   return (
@@ -180,11 +186,12 @@ function PetMog() {
               <Trophy className="size-4" /> <span className="hidden sm:inline">Leaderboard</span>
             </Link>
           </Button>
-          <Button asChild variant="ghost" size="sm" className="rounded-full font-bold">
-            <Link to="/profile">
-              <Heart className="size-4" /> <span className="hidden sm:inline">Profile</span>
-            </Link>
-          </Button>
+          <AccountActions
+            user={user}
+            loading={sessionLoading}
+            showGuestProfile
+            onSignedOut={() => setProfile(loadProfile())}
+          />
           <ThemeToggle />
         </nav>
       </header>
@@ -200,8 +207,27 @@ function PetMog() {
             onCreateCode={() => {
               const code = makeCode();
               setFriendCode(code);
-              navigator.clipboard?.writeText(code).catch(() => undefined);
-              toast.success(`Friend code ${code} copied!`, { description: "Share it, then start the duel." });
+              const copy = navigator.clipboard?.writeText(code);
+              if (!copy) {
+                toast.success(`Friend code ${code} is ready`, {
+                  description: "Share it before starting the friend duel.",
+                });
+                return;
+              }
+              void copy
+                .then(() =>
+                  toast.success(`Friend code ${code} copied!`, {
+                    description: "Share it, then start the friend duel.",
+                  }),
+                )
+                .catch(() =>
+                  toast.success(`Friend code ${code} is ready`, {
+                    description: "Share it before starting the friend duel.",
+                  }),
+                );
+            }}
+            onStartFriend={() => {
+              if (friendCode) startDuel(friendCode);
             }}
             friendCode={friendCode}
             joinCode={joinCode}
@@ -266,7 +292,10 @@ function PetMog() {
             </div>
             <div className="grid grid-cols-2 gap-3 sm:gap-5">
               <WebcamStage label={`You · ${profile.petName}`} active />
-              <OpponentStage label={`${opponent.petName} · ${opponent.username}`} emoji={opponent.emoji} />
+              <OpponentStage
+                label={`${opponent.petName} · ${opponent.username}`}
+                emoji={opponent.emoji}
+              />
             </div>
             <div className="text-center">
               <Button
@@ -297,7 +326,9 @@ function PetMog() {
 
       <footer className="mx-auto w-full max-w-5xl px-4 pb-10 text-center text-xs text-muted-foreground">
         <p>For fun only — no pets were ranked seriously. 18+ recommended, be kind out there.</p>
-        <p className="mt-1">Your camera is only used live during a duel and is never recorded or stored.</p>
+        <p className="mt-1">
+          Your camera is only used live during a duel and is never recorded or stored.
+        </p>
       </footer>
     </div>
   );
@@ -310,6 +341,7 @@ function Home(props: {
   nextRankName?: string | undefined;
   onStart: () => void;
   onCreateCode: () => void;
+  onStartFriend: () => void;
   friendCode: string | null;
   joinCode: string;
   setJoinCode: (v: string) => void;
@@ -320,7 +352,9 @@ function Home(props: {
   return (
     <div className="space-y-8">
       <section className="card-soft relative overflow-hidden p-6 text-center sm:p-12 animate-pop">
-        <div className="pointer-events-none absolute -left-6 top-6 text-5xl opacity-70 animate-float">🐩</div>
+        <div className="pointer-events-none absolute -left-6 top-6 text-5xl opacity-70 animate-float">
+          🐩
+        </div>
         <div className="pointer-events-none absolute -right-4 bottom-8 text-5xl opacity-70 animate-float [animation-delay:1s]">
           🐈
         </div>
@@ -331,11 +365,15 @@ function Home(props: {
           Who&apos;s the cutest? <span className="text-gradient">Let the pets decide.</span>
         </h1>
         <p className="mx-auto mt-3 max-w-lg text-sm font-semibold text-muted-foreground sm:text-base">
-          A 15-second webcam duel between two pets. The AI scores cuteness, energy and fluff — one of you
-          mogs, one gets mogged.
+          A 15-second webcam duel between two pets. The AI scores cuteness, energy and fluff — one
+          of you mogs, one gets mogged.
         </p>
         <div className="mt-6 flex flex-col items-center gap-3">
-          <Button size="lg" onClick={props.onStart} className="w-full rounded-full text-lg font-extrabold sm:w-auto sm:px-12">
+          <Button
+            size="lg"
+            onClick={props.onStart}
+            className="w-full rounded-full text-lg font-extrabold sm:w-auto sm:px-12"
+          >
             <Sparkles className="size-5" /> Start Duel
           </Button>
           <p className="text-xs text-muted-foreground">
@@ -348,13 +386,22 @@ function Home(props: {
       <section className="grid gap-4 sm:grid-cols-2">
         <div className="card-soft space-y-3 p-6">
           <h2 className="text-lg font-extrabold">Duel a friend</h2>
-          <Button variant="secondary" className="w-full rounded-full font-bold" onClick={props.onCreateCode}>
+          <Button
+            variant="secondary"
+            className="w-full rounded-full font-bold"
+            onClick={props.onCreateCode}
+          >
             Create friend code
           </Button>
           {props.friendCode && (
-            <p className="rounded-2xl bg-muted px-4 py-3 text-center font-display text-3xl font-extrabold tracking-[0.3em]">
-              {props.friendCode}
-            </p>
+            <>
+              <p className="rounded-2xl bg-muted px-4 py-3 text-center font-display text-3xl font-extrabold tracking-[0.3em]">
+                {props.friendCode}
+              </p>
+              <Button className="w-full rounded-full font-bold" onClick={props.onStartFriend}>
+                Start friend duel
+              </Button>
+            </>
           )}
           <div className="flex gap-2">
             <Input
@@ -385,7 +432,8 @@ function Home(props: {
           </div>
           {props.nextRankName && (
             <p className="text-xs text-muted-foreground">
-              Next rank to unlock: <span className="font-bold text-foreground">{props.nextRankName}</span>
+              Next rank to unlock:{" "}
+              <span className="font-bold text-foreground">{props.nextRankName}</span>
             </p>
           )}
         </div>
@@ -397,17 +445,26 @@ function Home(props: {
 function ScoreRow({ label, mine, theirs }: { label: string; mine: number; theirs: number }) {
   return (
     <div className="flex items-center gap-3 text-sm">
-      <span className={`w-12 text-right font-extrabold ${mine >= theirs ? "text-win" : "text-muted-foreground"}`}>
+      <span
+        className={`w-12 text-right font-extrabold ${mine >= theirs ? "text-win" : "text-muted-foreground"}`}
+      >
         {mine.toFixed(1)}
       </span>
       <div className="flex-1">
-        <p className="text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+        <p className="text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          {label}
+        </p>
         <div className="mt-1 flex h-2 overflow-hidden rounded-full bg-muted">
-          <div className="h-full bg-primary" style={{ width: `${(mine / (mine + theirs)) * 100}%` }} />
+          <div
+            className="h-full bg-primary"
+            style={{ width: `${(mine / (mine + theirs)) * 100}%` }}
+          />
           <div className="h-full flex-1 bg-secondary" />
         </div>
       </div>
-      <span className={`w-12 font-extrabold ${theirs > mine ? "text-win" : "text-muted-foreground"}`}>
+      <span
+        className={`w-12 font-extrabold ${theirs > mine ? "text-win" : "text-muted-foreground"}`}
+      >
         {theirs.toFixed(1)}
       </span>
     </div>
@@ -431,7 +488,9 @@ function Results(props: {
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground">
           {result.won ? "Mogger" : "Mogged"}
         </p>
-        <h1 className={`mt-2 font-display text-3xl font-extrabold sm:text-5xl ${result.won ? "text-win" : "text-lose"}`}>
+        <h1
+          className={`mt-2 font-display text-3xl font-extrabold sm:text-5xl ${result.won ? "text-win" : "text-lose"}`}
+        >
           {result.line}
         </h1>
         <p className="mt-2 text-sm font-semibold text-muted-foreground">

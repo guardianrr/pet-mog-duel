@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { resetSavedProfile } from "@/lib/petmog";
 
 export function useSession() {
   const [user, setUser] = useState<User | null>(null);
@@ -27,5 +28,7 @@ export function useSession() {
 }
 
 export async function signOut() {
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+  resetSavedProfile();
 }
