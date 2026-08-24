@@ -108,7 +108,7 @@ function PetMog() {
         theirs,
         won,
         delta,
-        line: (won ? WIN_LINES : LOSS_LINES)[Math.floor(Math.random() * 4)],
+        line: (won ? WIN_LINES : LOSS_LINES)[Math.floor(Math.random() * 4)]!,
       });
       beep(won ? 880 : 220, 0.25, profile.sound);
       setPhase("results");
@@ -307,7 +307,7 @@ function Home(props: {
   online: number;
   profile: Profile;
   rank: { name: string; emoji: string };
-  nextRankName?: string;
+  nextRankName?: string | undefined;
   onStart: () => void;
   onCreateCode: () => void;
   friendCode: string | null;

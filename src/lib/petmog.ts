@@ -21,7 +21,7 @@ export const RANKS: Rank[] = [
 ];
 
 export function rankFor(elo: number): Rank {
-  let r = RANKS[0];
+  let r: Rank = RANKS[0]!;
   for (const rank of RANKS) if (elo >= rank.min) r = rank;
   return r;
 }
@@ -97,7 +97,7 @@ export const OPPONENTS = [
 ];
 
 export function randomOpponent() {
-  return OPPONENTS[Math.floor(Math.random() * OPPONENTS.length)];
+  return OPPONENTS[Math.floor(Math.random() * OPPONENTS.length)]!;
 }
 
 export const WIN_LINES = [
