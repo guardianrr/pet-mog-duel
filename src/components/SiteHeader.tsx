@@ -72,7 +72,7 @@ export function SiteHeader() {
             aria-label="Toggle menu"
             onClick={() => setOpen((o) => !o)}
           >
-            {open ? <Menu className="size-5" /> : <X className="size-5 rotate-45" />}
+            {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </Button>
         </div>
       </div>
